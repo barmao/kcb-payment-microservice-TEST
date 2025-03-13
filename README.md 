@@ -1,0 +1,71 @@
+# Payment Service
+
+A microservice for processing B2C mobile money payments.
+
+## Features
+
+- Process payments to customer mobile wallets
+- Track payment status
+- Secure API with OAuth2/Auth0
+- Support for M-Pesa, Airtel Money, and other providers
+
+## Setup
+
+### Requirements
+
+- Java 17+
+- Gradle
+- Auth0 account
+
+### Quick Start
+
+1. Configure Auth0 in `application.properties`:
+   ```properties
+   spring.security.oauth2.resourceserver.jwt.issuer-uri=https://your-domain.auth0.com/
+   spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://your-domain.auth0.com/.well-known/jwks.json
+
+   auth0.client-id=your-client-id
+   auth0.client-secret=your-client-secret
+   auth0.audience=your-api-identifier
+   auth0.domain=your-domain.auth0.com
+   ```
+
+2. Run the application:
+   ```bash
+   ./gradlew bootRun
+   ```
+
+3. Using Docker:
+   ```bash
+   docker build -t payment-service .
+   docker run -p 8080:8080 payment-service
+   ```
+
+## API Endpoints
+
+- POST /api/payments - Process a regular payment
+- GET /api/payments/{id} - Get a specific payment by ID
+- GET /api/payments - Get all payments (paginated)
+
+## Authentication
+
+Get an access token from Auth0:
+
+```bash
+curl --request POST \
+  --url https://your-domain.auth0.com/oauth/token \
+  --header 'content-type: application/json' \
+  --data '{
+    "client_id": "your-client-id",
+    "client_secret": "your-client-secret",
+    "audience": "your-api-identifier",
+    "grant_type": "client_credentials"
+  }'
+```
+
+Use the token in API requests:
+
+```bash
+curl -X GET http://localhost:8080/api/payments/12345 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
