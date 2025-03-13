@@ -1,57 +1,76 @@
-# Payment Service
+# B2C Mobile Money Microservice
 
-A microservice for processing B2C mobile money payments.
+## Overview
+A simple microservice for Business-to-Consumer (B2C) mobile money transactions in Kenya. It processes payments and sends SMS notifications on success or failure.
 
 ## Features
-
 - Process payments to customer mobile wallets
 - Track payment status
 - Secure API with OAuth2/Auth0
 - Support for M-Pesa, Airtel Money, and other providers
+- Uses Docker for containerization
+- Includes unit and integration tests
+- Uses an in-memory database
+
+## Assumptions
+1. The actual implementation of mobile money and SMS gateway integrations will be handled separately, so abstractions will be used.
+2. The in-memory database (H2) is for development and testing purposes and should be replaced with a persistent database in production.
+
+## Tech Stack
+- **Java (Spring Boot)**
+- **OAuth2/Auth0 for security**
+- **Docker for containerization**
+- **JUnit & Mockito for testing**
+- **H2 Database (in-memory storage)**
 
 ## Setup
 
 ### Requirements
-
 - Java 17+
 - Gradle
 - Auth0 account
 
-### Quick Start
+### Configure Auth0
+Update `application.properties` with Auth0 credentials:
+```properties
+spring.security.oauth2.resourceserver.jwt.issuer-uri=https://your-domain.auth0.com/
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://your-domain.auth0.com/.well-known/jwks.json
 
-1. Configure Auth0 in `application.properties`:
-   ```properties
-   spring.security.oauth2.resourceserver.jwt.issuer-uri=https://your-domain.auth0.com/
-   spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://your-domain.auth0.com/.well-known/jwks.json
+auth0.client-id=your-client-id
+auth0.client-secret=your-client-secret
+auth0.audience=your-api-identifier
+auth0.domain=your-domain.auth0.com
+```
 
-   auth0.client-id=your-client-id
-   auth0.client-secret=your-client-secret
-   auth0.audience=your-api-identifier
-   auth0.domain=your-domain.auth0.com
+### How to Run
+1. Clone the repo:
+   ```sh
+   git clone git@github.com:barmao/kcb-payment-microservice-TEST.git
+   cd <repository-folder>
    ```
-
-2. Run the application:
-   ```bash
+2. Build and run:
+   ```sh
+   ./gradlew build
    ./gradlew bootRun
    ```
-
-3. Using Docker:
-   ```bash
-   docker build -t payment-service .
-   docker run -p 8080:8080 payment-service
+3. Run with Docker:
+   ```sh
+   docker build -t b2c-microservice .
+   docker run -p 8080:8080 b2c-microservice
    ```
 
 ## API Endpoints
-
-- POST /api/payments - Process a regular payment
-- GET /api/payments/{id} - Get a specific payment by ID
-- GET /api/payments - Get all payments (paginated)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/api/payments` | Process a regular payment |
+| GET    | `/api/payments/{id}` | Get a specific payment by ID |
+| GET    | `/api/payments` | Get all payments (paginated) |
+| GET    | `/api/dev/token` | Get a test Auth0 token (development only) |
 
 ## Authentication
-
 Get an access token from Auth0:
 
-```bash
+```sh
 curl --request POST \
   --url https://your-domain.auth0.com/oauth/token \
   --header 'content-type: application/json' \
@@ -65,7 +84,14 @@ curl --request POST \
 
 Use the token in API requests:
 
-```bash
+```sh
 curl -X GET http://localhost:8080/api/payments/12345 \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
+
+### Development Token Endpoint
+For testing purposes, you can retrieve an Auth0 token using the development-only endpoint:
+```sh
+curl -X GET http://localhost:8080/api/dev/token
+```
+This endpoint is only enabled in the development profile and should not be used in production.
